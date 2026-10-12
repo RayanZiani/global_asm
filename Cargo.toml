@@ -1,0 +1,41 @@
+[package]
+name = "global-asm"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+description = "Indirect-syscall shellcode runner (educational / detection-engineering tooling)"
+license = "MIT"
+publish = false
+
+[lib]
+name = "global_asm"
+path = "src/lib.rs"
+
+[[bin]]
+name = "global-asm"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "z"      # small artifact
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+overflow-checks = false
+debug = false
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[lints.rust]
+unused_must_use = "deny"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+ptr_as_ptr = "allow"
+cast_ptr_alignment = "allow"
+inline_always = "allow"
+missing_safety_doc = "allow"
+not_unsafe_ptr_arg_deref = "allow"
+manual_range_contains = "allow"

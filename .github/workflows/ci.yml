@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  test:
+    name: test (${{ matrix.rust }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [stable, beta, nightly]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust (${{ matrix.rust }})
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          components: rustfmt, clippy
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: rustfmt
+        run: cargo fmt --all --check
+
+      - name: check
+        run: cargo check --all-targets --all-features
+
+      - name: clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: test
+        run: cargo test --all-targets --all-features
+
+      - name: release build
+        run: cargo build --release
+
+      - name: smoke (indirect-syscall end-to-end)
+        shell: pwsh
+        run: |
+          ./target/release/global-asm.exe resolve
+          ./target/release/global-asm.exe smoke
+          if ($LASTEXITCODE -ne 0x1337) {
+            throw "smoke test exited $LASTEXITCODE, expected 4919 (0x1337)"
+          }
+
+  msrv:
+    name: msrv (1.88)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.88.0
+      - run: cargo check --all-targets

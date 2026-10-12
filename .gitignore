@@ -1,0 +1,20 @@
+# Rust build artifacts
+/target/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Debug / crash dumps
+*.pdb
+*.dmp
